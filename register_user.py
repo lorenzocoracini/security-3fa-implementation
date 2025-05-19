@@ -4,15 +4,15 @@ import os
 import requests
 
 class RegisterUser:
-    def __init__(self, nome, celular, senha, ip):
-        self._nome = nome
-        self._celular = celular
-        self._senha = senha
+    def __init__(self, name, cellphone, password, ip):
+        self._name = name
+        self._cellphone = cellphone
+        self._password = password
         self._ip = ip   
     
-    def _get_user_local(self):
+    def _get_user_local(self,ip):
         # https://ip-api.com/docs/api:json
-        response = requests.get(f"http://ip-api.com/json/{self._ip}")  
+        response = requests.get(f"http://ip-api.com/json/{ip}")  
         if response.status_code == 200:
             data = response.json()
             _country = data.get("country")
@@ -43,14 +43,14 @@ class RegisterUser:
         self._salt = salt
         return salt + key
 
-    def _save_to_csv(self, filename='data/user_data.csv'):
+    def _save_to_csv(self, filename):
         with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
             if file.tell() == 0:
-                writer.writerow(['Nome', 'Celular', 'País', 'Salt', 'SenhaHash'])
+                writer.writerow(['Name', 'Cellphone', 'Country', 'Salt', 'Key'])
             writer.writerow([
-                self._nome,
-                self._celular,
+                self._name,
+                self._cellphone,
                 self._country,
                 self._salt.hex(),
                 self._key.hex()
@@ -59,8 +59,8 @@ class RegisterUser:
 
     
     def execute(self):
-        self._get_user_local()
-        self._password_key_derivation(self._senha)
-        self._save_to_csv()
+        self._get_user_local(self._ip)
+        self._password_key_derivation(self._password)
+        self._save_to_csv(filename='data/user_data.csv')
         
         

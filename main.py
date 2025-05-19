@@ -3,17 +3,17 @@ import requests
 
 
 def get_user_information():
-    print('---- BEM VINDO!!! ----')
-    print('Se cadastre a seguir!')
-    nome = input('Digite seu nome:')
-    celular = input('Digite seu celular:')
-    senha = input('Digite sua senha:')
+    print('---- Welcome!!! ----')
+    print('Register!')
+    name = input('Name:')
+    cellphone = input('CellPhone:')
+    password = input('Password:')
     ip = requests.get('https://api.ipify.org').text    
-    return nome, celular, senha, ip
+    return name, cellphone, password, ip
 
 def register_user():
-    nome, celular, senha, ip = get_user_information()
-    RegisterUser(nome=nome, celular=celular, senha=senha, ip=ip).execute()
+    name, cellphone, password, ip = get_user_information()
+    RegisterUser(name=name, cellphone=cellphone, password=password, ip=ip).execute()
 
 
 register_user()
