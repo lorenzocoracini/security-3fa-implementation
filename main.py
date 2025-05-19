@@ -3,11 +3,11 @@ import requests
 
 
 def get_user_information():
-    print('---- BEM VINDO!!!!!')
-    print('Se cadaste a seguir!')
+    print('---- BEM VINDO!!! ----')
+    print('Se cadastre a seguir!')
     nome = input('Digite seu nome:')
     celular = input('Digite seu celular:')
-    senha = input('DIgite sua senha')
+    senha = input('Digite sua senha:')
     ip = requests.get('https://api.ipify.org').text    
     return nome, celular, senha, ip
 

@@ -67,10 +67,3 @@ class RegisterUser:
         self._save_to_csv()
         
         
-    
-# teste
-meu_ip = '189.4.104.246'
-ip_franca = '91.160.93.4'
-#r = RegisterUser('Lorenzo', 222,'123',ip=ip_franca)
-#r.execute()
-
