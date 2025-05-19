@@ -8,7 +8,7 @@ class RegisterUser:
         self._nome = nome
         self._celular = celular
         self._senha = senha
-        self._ip = ip
+        self._ip = ip   
     
     def _get_user_local(self):
         # https://ip-api.com/docs/api:json
@@ -71,5 +71,6 @@ class RegisterUser:
 # teste
 meu_ip = '189.4.104.246'
 ip_franca = '91.160.93.4'
-r = RegisterUser('Lorenzo', 222,'123',ip=ip_franca)
-r.execute()
+#r = RegisterUser('Lorenzo', 222,'123',ip=ip_franca)
+#r.execute()
+
