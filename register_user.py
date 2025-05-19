@@ -24,10 +24,7 @@ class RegisterUser:
             print('None')
             return None
         
-    def _password_key_derivation(self, password):
-        # https://ssojet.com/hashing/scrypt-in-python/
-        print('password ->', password)
-        
+    def _password_key_derivation(self, password):        
         salt = os.urandom(16)
         
         key = hashlib.scrypt(
@@ -37,7 +34,7 @@ class RegisterUser:
             r=8,                # Block size
             p=1,                # Parallelization factor
             maxmem=0,          # Maximum memory usage (0 for no limit)
-            dklen=64            # Length of the derived key
+            dklen=64            # Length of the derived 
         )
         
         print('salt ->', salt.hex())
