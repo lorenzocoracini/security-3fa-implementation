@@ -1,8 +1,7 @@
-def check_ip(totp):
+from register_user import RegisterUser
+
+def get_user_information():
     pass
 
-def check_password(totp):
-    pass
-
-def check_totp(totp):
-    pass
+def register_user(nome, celular, senha, ip):
+    RegisterUser(nome=nome, celular=celular, senha=senha, ip=ip).execute()
