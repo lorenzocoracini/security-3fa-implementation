@@ -1,4 +1,7 @@
 import requests
+import base64
+import qrcode
+from io import BytesIO
 
 SERVER_URL = "http://localhost:8888"
 
@@ -21,6 +24,16 @@ def register():
         response = requests.post(f"{SERVER_URL}/register", json=data)
         if response.status_code == 200:
             print("✅ Registration successful!")
+
+            totp_uri = response.json().get("totp_uri")
+            if totp_uri:
+                qr = qrcode.QRCode()
+                qr.add_data(totp_uri)
+                qr.make(fit=True)
+                print("\nScan this QR code with your authenticator app:\n")
+                qr.print_ascii(invert=True)
+            else:
+                print("No TOTP URI received.")
         else:
             print(f"❌ Error: {response.status_code} - {response.text}")
     except Exception as e:
@@ -31,11 +44,13 @@ def login():
 
     username = input("Username: ")
     password = input("Password: ")
+    totp_token = input("Código de acesso: ")
     ip = requests.get("https://api.ipify.org").text
 
     data = {
         "name": username,
         "password": password,
+        "totp_token": totp_token,
         "ip": ip
     }
 
