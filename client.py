@@ -26,15 +26,40 @@ def register():
     except Exception as e:
         print(f"❌ Request failed: {e}")
 
+def login():
+    print("\n=== Login ===")
+
+    username = input("Username: ")
+    password = input("Password: ")
+    ip = requests.get("https://api.ipify.org").text
+
+    data = {
+        "name": username,
+        "password": password,
+        "ip": ip
+    }
+
+    try:
+        response = requests.post(f"{SERVER_URL}/login", json=data)
+        if response.status_code == 200:
+            print("✅ Login successful!")
+        else:
+            print(f"❌ Error: {response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"❌ Request failed: {e}")
+
 def main():
     while True:
         print("\n=== Main Menu ===")
         print("1. Register")
+        print("2. Login")
         print("0. Exit")
         choice = input("Select an option: ")
 
         if choice == "1":
             register()
+        elif choice == "2":
+            login()
         elif choice == "0":
             break
         else:

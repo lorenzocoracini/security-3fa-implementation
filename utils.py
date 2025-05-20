@@ -1,7 +1,7 @@
 import csv
 import requests
-import hashlib
-import os
+
+DATA_PATH = "data/user_data.csv"
 
 def get_user_local(ip):
     # https://ip-api.com/docs/api:json
@@ -15,23 +15,16 @@ def get_user_local(ip):
     else:
         return None
 
-def password_key_derivation(password):
-    salt = os.urandom(16)
+def get_user_by_name(name):
+    with open(DATA_PATH, newline='') as file:
+        reader = csv.DictReader(file)
 
-    key = hashlib.scrypt(
-        password.encode(),  # Convert password to bytes
-        salt=salt,          # Use the generated salt
-        n=16384,            # CPU/memory cost factor
-        r=8,                # Block size
-        p=1,                # Parallelization factor
-        maxmem=0,           # Maximum memory usage (0 for no limit)
-        dklen=64            # Length of the derived
-    )
+        for row in reader:
+            if row["Name"].lower() == name.lower():
+                return row
 
-    return salt, key
-
-def save_to_csv(filename, header, row):
-    with open(filename, mode='a', newline='') as file:
+def save_to_csv(header, row):
+    with open(DATA_PATH, mode='a', newline='') as file:
         writer = csv.writer(file)
 
         if file.tell() == 0:
