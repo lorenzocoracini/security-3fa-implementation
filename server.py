@@ -3,6 +3,7 @@ import os
 import base64
 import io
 import qrcode
+import logging
 from datetime import datetime
 
 import uvicorn
@@ -21,6 +22,7 @@ FERNET_KEY = b"ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg="
 app = FastAPI()
 fernet = Fernet(FERNET_KEY)
 load_dotenv()
+logger = logging.getLogger("uvicorn.error")
 
 
 @app.post("/")
@@ -37,6 +39,7 @@ async def root(request: Request):
         return JSONResponse({"message": "Access denied"}, status_code=403)
 
     message = data["msg"]
+    logger.info(f'Received message: "{message}"')
 
     return JSONResponse({"message": f"Received message: {message}"})
 
