@@ -3,7 +3,7 @@ import os
 import requests
 import qrcode
 
-import utils
+import client_utils as utils
 
 SERVER_URL = "http://localhost:8888"
 
