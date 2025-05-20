@@ -1,8 +1,12 @@
+import os
 import csv
 import requests
 import hmac
 import hashlib
 import base64
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 
 DATA_PATH = "data/user_data.csv"
 
@@ -26,6 +30,41 @@ def verify_data(token, key):
             return data.decode()
     except Exception:
         return None
+
+
+def derive_key_scrypt(password, salt):
+    key = hashlib.scrypt(
+        password.encode(),
+        salt=salt,
+        n=16384,  # CPU/memory cost factor
+        r=8,  # Tamanho do bloco
+        p=1,  # Parallelization factor
+        maxmem=0,
+        dklen=16,  # Tamanho da chave derivada
+    )
+
+    return key
+
+
+def encrypt_message(message, key):
+    iv = os.urandom(16)  # Generate a random IV
+    cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+    ciphertext = encryptor.update(message.encode()) + encryptor.finalize()
+
+    return {
+        "ciphertext": base64.b64encode(ciphertext).decode(),
+        "iv": base64.b64encode(iv).decode(),
+        "tag": base64.b64encode(encryptor.tag).decode(),
+    }
+
+
+def decrypt_message(ciphertext, key, iv, tag):
+    cipher = Cipher(algorithms.AES(key), modes.GCM(iv, tag), backend=default_backend())
+    decryptor = cipher.decryptor()
+    message = decryptor.update(ciphertext) + decryptor.finalize()
+
+    return message
 
 
 def get_user_local(ip):

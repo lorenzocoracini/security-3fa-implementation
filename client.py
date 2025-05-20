@@ -1,5 +1,9 @@
+import base64
+import os
 import requests
 import qrcode
+
+import utils
 
 SERVER_URL = "http://localhost:8888"
 
@@ -83,9 +87,21 @@ def send_message():
     print("\n=== Send Message ===")
 
     msg = input("Message: ")
+    totp_token = input("Código de acesso: ")
+
+    # Deriva chave baseada no código TOTP para cifrar mensagem
+    salt = os.urandom(16)
+    key = utils.derive_key_scrypt(totp_token, salt)
+
+    # Cifra mensagem
+    encrypted_message = utils.encrypt_message(msg, key)
 
     data = {
-        "msg": msg,
+        "totp_token": totp_token,
+        "salt": base64.b64encode(salt).decode(),
+        "ciphertext": encrypted_message["ciphertext"],
+        "iv": encrypted_message["iv"],
+        "tag": encrypted_message["tag"],
     }
 
     try:

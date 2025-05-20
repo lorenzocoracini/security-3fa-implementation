@@ -34,14 +34,38 @@ async def root(request: Request):
     if not session_cookie:
         return JSONResponse({"message": "Access denied"}, status_code=401)
 
-    session_valid = utils.verify_data(session_cookie, SESSION_KEY)
-    if not session_valid:
+    session_cookie = utils.verify_data(session_cookie, SESSION_KEY)
+    if not session_cookie:
         return JSONResponse({"message": "Access denied"}, status_code=403)
 
-    message = data["msg"]
-    logger.info(f'Received message: "{message}"')
+    username = session_cookie.split(":")[0]
+    user = utils.get_user_by_name(username)
+    if not user:  # Verifica se o usuário existe
+        return JSONResponse({"message": "Access denied"}, status_code=403)
 
-    return JSONResponse({"message": f"Received message: {message}"})
+    # Verifica código TOTP
+    encrypted_secret = user["TOTPSecret"]
+    decrypted_secret = fernet.decrypt(encrypted_secret.encode()).decode()
+
+    totp = pyotp.TOTP(decrypted_secret)
+    if not (data["totp_token"] and totp.verify(data["totp_token"])):
+        return JSONResponse({"message": "Invalid TOTP token"}, status_code=400)
+
+    ciphertext = base64.b64decode(data["ciphertext"])
+    iv = base64.b64decode(data["iv"])
+    tag = base64.b64decode(data["tag"])
+    salt = base64.b64decode(data["salt"])
+
+    # Deriva chave a partir do código TOTP e salt
+    key = utils.derive_key_scrypt(data["totp_token"], salt)
+
+    try:
+        message = utils.decrypt_message(ciphertext, key, iv, tag).decode()
+        logger.info(f"Received message: {message}")
+        return JSONResponse({"message": f"Received message: {message}"})
+    except Exception as e:
+        logger.error(f"Decryption failed: {e}")
+        return JSONResponse({"message": "Bad Request"}, status_code=400)
 
 
 @app.post("/register")
@@ -54,15 +78,7 @@ async def register(request: Request):
     country = utils.get_user_local(data["ip"])
 
     salt = os.urandom(16)  # Inteiro aleatório de 16 digitos
-    key = hashlib.scrypt(
-        password.encode(),
-        salt=salt,
-        n=16384,  # CPU/memory cost factor
-        r=8,  # Tamanho do bloco
-        p=1,  # Parallelization factor
-        maxmem=0,
-        dklen=64,  # Tamanho da chave derivada
-    )
+    key = utils.derive_key_scrypt(password, salt)
 
     # Cria o secret TOTP
     totp_secret = pyotp.random_base32()
@@ -114,15 +130,7 @@ async def login(request: Request):
     stored_key = user["Key"]
 
     # Derive chave a partir da senha enviada e do salt guardado
-    derived_key = hashlib.scrypt(
-        password.encode(),
-        salt=stored_salt,
-        n=16384,
-        r=8,
-        p=1,
-        maxmem=0,
-        dklen=64,
-    )
+    derived_key = utils.derive_key_scrypt(password, stored_salt)
 
     if derived_key.hex() != stored_key:
         return JSONResponse({"message": "Access denied"}, status_code=403)
@@ -131,10 +139,8 @@ async def login(request: Request):
     decrypted_secret = fernet.decrypt(encrypted_secret.encode()).decode()
 
     totp = pyotp.TOTP(decrypted_secret)
-    if not totp_token:
-        return JSONResponse({"message": "Missing TOTP token"}, status_code=403)
-    elif totp.verify(totp_token):
-        return JSONResponse({"message": "Invalid TOTP token"}, status_code=403)
+    if not (totp_token and totp.verify(totp_token)):
+        return JSONResponse({"message": "Invalid TOTP Token"}, status_code=400)
 
     # Gera cookie assinado e seta na sessão do usuário
     cookie = f"{user['Name']}:{int(datetime.now().timestamp())}"
