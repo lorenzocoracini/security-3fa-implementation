@@ -75,7 +75,7 @@ python3.11 client.py
 
 - **1. Register**: Cria um novo usuário e gera QR Code para ser escaneado em um App de Autenticação no celular(ex: Authenticator), para configuração TOTP.
 - **2. Login**: Autentica com senha e código TOTP que deve ser consultado no App.
-- **3. Send Message**: Envia mensagem cifrada ao servidor (criptografia baseada no token TOTP que pode deve ser pego no App).
+- **3. Send Message**: Envia mensagem cifrada ao servidor (criptografia baseada no token TOTP que pode deve ser consultado no App).
 - **4. Logout**: Encerra a sessão.
 - **0. Exit**: Sai do programa.
 
