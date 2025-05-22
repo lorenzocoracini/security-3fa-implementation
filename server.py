@@ -1,4 +1,4 @@
-import os
+import secrets
 import base64
 import io
 import qrcode
@@ -76,7 +76,7 @@ async def register(request: Request):
     password = data["password"]
     country = utils.get_user_local(data["ip"])
 
-    salt = os.urandom(16)  # Inteiro aleatório de 16 digitos
+    salt = secrets.randbits(16)  # Inteiro aleatório de 16 digitos
     key = utils.derive_key_scrypt(password, salt)
 
     # Cria o secret TOTP

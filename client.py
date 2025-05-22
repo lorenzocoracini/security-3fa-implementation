@@ -1,5 +1,5 @@
+import secrets
 import base64
-import os
 import requests
 import qrcode
 
@@ -90,7 +90,7 @@ def send_message():
     totp_token = input("Código de acesso: ")
 
     # Deriva chave baseada no código TOTP para cifrar mensagem
-    salt = os.urandom(16)
+    salt = secrets.randbits(16)
     key = utils.derive_key_scrypt(totp_token, salt)
 
     # Cifra mensagem
