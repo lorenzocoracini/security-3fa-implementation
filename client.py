@@ -89,18 +89,18 @@ def send_message():
     msg = input("Message: ")
     totp_token = input("Código de acesso: ")
 
-    # Deriva chave baseada no código TOTP para cifrar mensagem
-    salt = secrets.randbits(16)
+    # Deriva chave e IV baseados no código TOTP para cifrar mensagem
+    salt = secrets.token_bytes(16)
     key = utils.derive_key_scrypt(totp_token, salt)
+    iv = utils.derive_key_pbkdf2(totp_token, salt)
 
     # Cifra mensagem
-    encrypted_message = utils.encrypt_message(msg, key)
+    encrypted_message = utils.encrypt_message(msg, key, iv)
 
     data = {
         "totp_token": totp_token,
         "salt": base64.b64encode(salt).decode(),
         "ciphertext": encrypted_message["ciphertext"],
-        "iv": encrypted_message["iv"],
         "tag": encrypted_message["tag"],
     }
 

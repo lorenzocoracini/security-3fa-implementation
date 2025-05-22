@@ -51,12 +51,12 @@ async def root(request: Request):
         return JSONResponse({"message": "Invalid TOTP token"}, status_code=400)
 
     ciphertext = base64.b64decode(data["ciphertext"])
-    iv = base64.b64decode(data["iv"])
     tag = base64.b64decode(data["tag"])
     salt = base64.b64decode(data["salt"])
 
-    # Deriva chave a partir do código TOTP e salt
+    # Deriva chave e IV a partir do código TOTP e salt
     key = utils.derive_key_scrypt(data["totp_token"], salt)
+    iv = utils.derive_key_pbkdf2(data["totp_token"], salt)
 
     try:
         message = utils.decrypt_message(ciphertext, key, iv, tag).decode()
@@ -76,7 +76,7 @@ async def register(request: Request):
     password = data["password"]
     country = utils.get_user_local(data["ip"])
 
-    salt = secrets.randbits(16)  # Inteiro aleatório de 16 digitos
+    salt = secrets.token_bytes(16)
     key = utils.derive_key_scrypt(password, salt)
 
     # Cria o secret TOTP
